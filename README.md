@@ -39,6 +39,30 @@ safe-start playbook, using **100% synthetic data**. 🛡️
 
 Plus a 🏁 final quiz and a 🛠️ practical exercise. Every TTP ships with a detection hypothesis, data sources and a synthetic log indicator.
 
+## 📸 Screenshots
+
+<div align="center">
+
+**🕹️ Home and module list**
+
+<img src="docs/img/menu.png" alt="TGV-DarkINT banner and module list" width="760">
+
+**🧰 M5: pick your Tor setup**
+
+<img src="docs/img/tor-setup.png" alt="Tor setup options: Tor Browser, Tails, Whonix, VPN + Tor" width="760">
+
+**🚀 M5: rules and your first session**
+
+<img src="docs/img/tor-first-session.png" alt="Do and Dont rules and the step-by-step first session" width="760">
+
+**🧠 Quizzes with instant feedback**
+
+<img src="docs/img/quiz.png" alt="Interactive quiz with score meter" width="760">
+
+</div>
+
+> 📷 Regenerate these with `python scripts/screenshots.py` (renders real output to SVG).
+
 ## 🧅 New to Tor? Start with M5
 
 > Do this module **before** you touch Tor.

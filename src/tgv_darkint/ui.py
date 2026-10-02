@@ -141,7 +141,7 @@ class Ui:
     ) -> None:
         status_colors = status_colors or {}
         if self.rich:
-            t = Table(title=f"[bold {PINK}]{escape(title)}[/]", box=box.ROUNDED, border_style=PURPLE, header_style=f"bold {TEAL}")
+            t = Table(title=f"[bold {PINK}]{escape(title)}[/]", box=box.ROUNDED, border_style=PURPLE, header_style=f"bold {TEAL}", show_lines=True)
             for c in columns:
                 t.add_column(c, overflow="fold")
             for row in rows:
