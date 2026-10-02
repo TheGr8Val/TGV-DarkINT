@@ -1,0 +1,2 @@
+# Runtime dependencies (also declared in pyproject.toml)
+rich>=13
