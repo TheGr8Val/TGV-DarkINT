@@ -1,2 +1,6 @@
-# Runtime dependencies (also declared in pyproject.toml)
+# Runtime
 rich>=13
+
+# Development (tests and lint)
+pytest>=7
+ruff>=0.4

@@ -70,7 +70,7 @@ or save/share illegal content. If you hit CSAM, leave immediately and report it 
 ```bash
 git clone https://github.com/TheGr8Val/TGV-DarkINT.git
 cd TGV-DarkINT
-pip install -r requirements.txt   # just `rich`, for the UI
+pip install -r requirements.txt   # rich for the UI, plus pytest and ruff for development
 pip install .
 ```
 
@@ -107,7 +107,7 @@ with `--data`. `tgv-darkint --data my.json validate` checks the structure, inclu
 ## 🧑‍💻 Development
 
 ```bash
-pip install -r requirements-dev.txt
+pip install -r requirements.txt
 pip install -e .
 pytest
 ruff check .
