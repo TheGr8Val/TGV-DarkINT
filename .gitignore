@@ -25,3 +25,4 @@ Thumbs.db
 
 # Intermediate screenshot renders (PNGs are committed)
 docs/img/*.svg
+uv.lock
