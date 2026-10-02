@@ -4,9 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tgv-darkint"
-version = "0.1.0"
+version = "0.2.0"
 description = "Dark-web terminology and TTP trainer for analysts. Synthetic data only."
 readme = "README.md"
+dependencies = ["rich>=13"]
 requires-python = ">=3.9"
 license = { text = "MIT" }
 authors = [{ name = "thegr8val" }]

@@ -30,5 +30,6 @@ ruff check .
 ## Code style
 
 - Python 3.9+, type hints on public functions, `ruff` clean.
-- No new runtime dependencies without discussion (the project is stdlib-only on purpose).
+- Keep runtime dependencies minimal (currently just `rich`). Discuss before adding another.
+- Keep output readable in `--plain` mode too: no information may exist only as colour or emoji.
 - Contributions are licensed under the MIT License of this repository.

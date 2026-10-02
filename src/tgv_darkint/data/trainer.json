@@ -343,6 +343,144 @@
           ]
         }
       }
+    },
+    {
+      "module_id": "M5",
+      "title": "Your First Time on Tor: Safe Setup & Navigation",
+      "type": "practical",
+      "content": {
+        "overview": "Before you open a single .onion page, set up your environment and your rules. Most beginner mistakes (leaking your identity, getting phished, landing on something illegal) come from skipping this module. This content is guidance only: TGV-DarkINT itself never connects to Tor.",
+        "setup_options": [
+          {
+            "name": "Tor Browser (on a dedicated machine or profile)",
+            "what": "Official browser from torproject.org that routes traffic through the Tor network and standardises your fingerprint.",
+            "good_for": "Quick, low-risk reading of public onion sites.",
+            "watch_out": "Your host OS is still in the loop. Malware or a careless download can expose you. Only download it from torproject.org and keep it updated."
+          },
+          {
+            "name": "Tails (live USB)",
+            "what": "Amnesic OS you boot from a USB stick. All traffic is forced through Tor and nothing is written to disk unless you enable encrypted Persistent Storage.",
+            "good_for": "Sensitive one-off sessions where you want zero local traces.",
+            "watch_out": "Everything is forgotten at shutdown, including your notes. Save notes to an encrypted USB. Tails ships its own Tor Browser."
+          },
+          {
+            "name": "Whonix (two VMs)",
+            "what": "A Gateway VM that does the Tor routing plus a Workstation VM that can only reach the network through it. Even if the Workstation is compromised, it cannot learn your real IP.",
+            "good_for": "Analysts who need tools, snapshots and repeatable investigations. Runs on VirtualBox or KVM; Qubes-Whonix is the hardened option.",
+            "watch_out": "Heavier setup. Keep both VMs updated and revert to a clean snapshot after each session."
+          },
+          {
+            "name": "VPN + Tor",
+            "what": "Connecting to a VPN first, then Tor ('Tor over VPN'), hides the fact that you use Tor from your ISP and local network.",
+            "good_for": "Environments where Tor use is flagged, or where company policy requires approved egress.",
+            "watch_out": "It is not magic anonymity. The VPN provider sees that you connect to Tor and you must trust their no-logs claim. Do not stack extra proxies without understanding the trade-off. Never use a VPN as a substitute for Tor Browser or Whonix."
+          }
+        ],
+        "rules": {
+          "do": [
+            "Get authorization and write down your research objective first",
+            "Use a dedicated device, VM or Tails: no personal accounts, no personal files",
+            "Verify you are on Tor at check.torproject.org after launching",
+            "Set Tor Browser security level to Safer or Safest (Safest disables JavaScript)",
+            "Take notes and screenshots inside the VM, then store them encrypted",
+            "Defang indicators in your notes (hxxp://example[.]onion) so nobody clicks by accident",
+            "Revert the VM snapshot or shut down Tails after the session"
+          ],
+          "dont": [
+            "Log in to personal accounts or reuse usernames, emails or passwords",
+            "Maximize the browser window or install extensions (both make you more fingerprintable)",
+            "Torrent over Tor or download and open files while online",
+            "Buy anything, register on forums or chat with threat actors unless your role and legal team explicitly allow it",
+            "Trust any onion link you did not verify: scams and phishing clones are everywhere",
+            "Save, screenshot or share illegal content. Close it and report it"
+          ]
+        },
+        "first_session": [
+          {
+            "step": 1,
+            "action": "Prepare your environment",
+            "detail": "Pick one option from the setup list (Tails or Whonix recommended for beginners), update it, and confirm no personal accounts are logged in."
+          },
+          {
+            "step": 2,
+            "action": "Connect and verify",
+            "detail": "Launch Tor Browser, let it connect, then open check.torproject.org to confirm you are using Tor. Set the security level to Safer or Safest."
+          },
+          {
+            "step": 3,
+            "action": "Start with DuckDuckGo",
+            "detail": "Open DuckDuckGo (it works fine inside Tor Browser) and search for 'Ahmia search engine'. Ahmia is an open-source search engine for onion services that filters out abuse material. Open it from the official result and sanity-check the domain."
+          },
+          {
+            "step": 4,
+            "action": "Search Ahmia for your research topic",
+            "detail": "Use plain keywords tied to your objective (for example a leak site name or forum name from public threat reporting). Read result titles and snippets first. You do not have to open everything."
+          },
+          {
+            "step": 5,
+            "action": "Find the maps: hidden wikis and onion directories",
+            "detail": "Search Ahmia for 'hidden wiki' and 'onion directory' to learn how the ecosystem is organised. Treat every copy as unverified. Many are outdated, scam-run or link to illegal content, so browse them to understand the landscape, not to trust them."
+          },
+          {
+            "step": 6,
+            "action": "Verify before you rely on a link",
+            "detail": "Cross-check onion addresses against reputable public sources (vendor threat reports, official project pages, PGP-signed mirror lists). v3 onion addresses are 56 characters plus .onion. One wrong character means a different site."
+          },
+          {
+            "step": 7,
+            "action": "Observe, document, leave",
+            "detail": "Record what you saw with timestamps and defanged URLs, then close the session. Use 'New Identity' in Tor Browser, then power off Tails or revert the Whonix snapshot."
+          }
+        ],
+        "legal_ethics": [
+          "Browsing is legal in most places, but laws differ. Know yours and your employer's policy before you start.",
+          "Never purchase, download malware, or interact with sellers. Observation only unless you are in an authorized, legally reviewed role.",
+          "If you stumble on child sexual abuse material, leave immediately, do not save or screenshot it, and report it to the IWF (iwf.org.uk), NCMEC (report.cybertip.org) or your local police.",
+          "Do not publish personal data you find about victims. Report it to the affected organization instead."
+        ],
+        "quiz": [
+          {
+            "question": "Which setup keeps your real IP hidden even if the machine you work in gets compromised?",
+            "options": [
+              "Tor Browser on your everyday laptop",
+              "Whonix (Gateway + Workstation VMs)",
+              "A browser extension that adds a proxy"
+            ],
+            "correct": 1,
+            "explanation": "In Whonix the Workstation can only reach the network through the Gateway, so malware inside it cannot discover your real IP."
+          },
+          {
+            "question": "What is the main trade-off of using a VPN before Tor?",
+            "options": [
+              "It makes you fully anonymous",
+              "It hides Tor use from your ISP but shifts trust to the VPN provider",
+              "It makes Tor faster"
+            ],
+            "correct": 1,
+            "explanation": "Your ISP sees only VPN traffic, but the VPN provider can see that you connect to Tor. It is a trust trade-off, not a free upgrade."
+          },
+          {
+            "question": "You find a 'Hidden Wiki' page full of onion links. How should you treat it?",
+            "options": [
+              "As a trusted, verified directory",
+              "As unverified: great for learning the landscape, never for blind trust",
+              "Click every link to check them all"
+            ],
+            "correct": 1,
+            "explanation": "Hidden wiki copies are often outdated, scam-run or point to illegal content. Verify links against reputable public sources."
+          },
+          {
+            "question": "You accidentally land on illegal content involving children. What do you do?",
+            "options": [
+              "Screenshot it as evidence",
+              "Leave immediately, do not save anything, and report it",
+              "Keep browsing to see where it leads"
+            ],
+            "correct": 1,
+            "explanation": "Never save or share it. Close it and report to the IWF, NCMEC or local police."
+          }
+        ]
+      }
     }
   ],
   "assessment": {
@@ -379,6 +517,26 @@
         ],
         "correct": 1,
         "explanation": "Always validate the source and look for corroborating reports before taking action or investing investigation time."
+      },
+      {
+        "question": "Which Tor Browser security level disables JavaScript?",
+        "options": [
+          "Standard",
+          "Safer",
+          "Safest"
+        ],
+        "correct": 2,
+        "explanation": "Safest disables JavaScript on all sites. Safer disables it on non-HTTPS sites and some risky features."
+      },
+      {
+        "question": "Which of these should you NEVER do in a first Tor session?",
+        "options": [
+          "Verify your connection at check.torproject.org",
+          "Log in to a personal account",
+          "Defang URLs in your notes"
+        ],
+        "correct": 1,
+        "explanation": "Logging in to a personal account ties the session to your real identity."
       }
     ],
     "practical_exercise": {

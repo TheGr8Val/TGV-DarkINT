@@ -4,134 +4,159 @@ from __future__ import annotations
 
 import argparse
 import sys
-from typing import Any, Callable
+from typing import Any
 
 from . import __version__
 from .trainer import find_module, load_data, score_answers, validate
+from .ui import AMBER, GREEN, RED, Ui
 
-BANNER = f"""\
-=== TGV-DarkINT v{__version__} ===
-Educational OSINT trainer. Synthetic data only. Never touches the dark web.
-"""
+TAGLINE = "Learn the dark web's vocabulary and tradecraft without going there."
 
 
-def title(text: str, out: Callable[[str], None] = print) -> None:
-    out(f"\n{'=' * 60}\n{text}\n{'=' * 60}\n")
+def banner(ui: Ui) -> None:
+    ui.banner(f"TGV-DarkINT v{__version__}", TAGLINE, "🕸️")
+    ui.warn("Educational OSINT trainer. Synthetic data only. This tool never connects to Tor.")
 
 
-def show_module(module: dict[str, Any], out: Callable[[str], None] = print) -> None:
-    title(f"MODULE {module['module_id']} - {module['title']}", out)
+def show_module(module: dict[str, Any], ui: Ui) -> None:
+    ui.heading(f"{module['module_id']} · {module['title']}")
     c = module["content"]
+    if "overview" in c:
+        ui.line(c["overview"])
     if "definitions" in c:
-        out("## DEFINITIONS\n")
+        ui.section("📖 Definitions")
         for term, text in c["definitions"].items():
-            out(f"{term.replace('_', ' ').title()}:\n  {text}\n")
+            ui.kv(term.replace("_", " ").title(), text)
     if "key_differences" in c:
-        out("## KEY DIFFERENCES\n")
-        for d in c["key_differences"]:
-            out(f"  - {d}")
-        out("")
+        ui.section("🔍 Key differences")
+        ui.bullets(c["key_differences"], "•")
     if "service_categories" in c:
-        out("## SERVICE CATEGORIES\n")
-        for name, info in c["service_categories"].items():
-            out(f"{name.replace('_', ' ').title()}:\n  {info['description']}")
-            out(f"  Detection relevance: {info['detection_relevance']}\n")
+        rows = [
+            (n.replace("_", " ").title(), i["description"], i["detection_relevance"])
+            for n, i in c["service_categories"].items()
+        ]
+        ui.section("🏪 Service categories")
+        ui.table("Dark-web service types", ["Category", "What it is", "Detection relevance"], rows)
+    if "setup_options" in c:
+        ui.section("🧰 Pick your setup")
+        rows = [(o["name"], o["what"], o["good_for"], o["watch_out"]) for o in c["setup_options"]]
+        ui.table("Setup options", ["Option", "What it is", "Good for", "Watch out"], rows)
+    if "rules" in c:
+        ui.section("✅ Do")
+        ui.bullets(c["rules"]["do"], "✓", GREEN)
+        ui.section("🚫 Don't")
+        ui.bullets(c["rules"]["dont"], "✗", RED)
+    if "first_session" in c:
+        ui.section("🚀 Your first session, step by step")
+        for s in c["first_session"]:
+            ui.kv(f"Step {s['step']}", s["action"], indent=0)
+            ui.line(f"    {s['detail']}")
+    if "legal_ethics" in c:
+        ui.section("⚖️  Legal and ethics")
+        ui.bullets(c["legal_ethics"], "!", AMBER)
     if "ttps" in c:
-        out("## TTPs\n")
+        ui.section("🎯 TTPs")
         for t in c["ttps"]:
-            out(f"{t['ttp_id']}: {t['name']}\n  {t['description']}")
-            out(f"  MITRE ATT&CK: {', '.join(t['mitre_mapping'])}")
-            out(f"  Detection hypothesis: {t['detection_hypothesis']}")
-            out(f"  Data sources: {', '.join(t['data_sources'])}")
-            out(f"  Synthetic indicator: {t['synthetic_indicators']['log_example']}\n")
+            ui.panel(
+                f"{t['ttp_id']} · {t['name']}",
+                [
+                    ("What", t["description"]),
+                    ("MITRE", ", ".join(t["mitre_mapping"])),
+                    ("Hypothesis", t["detection_hypothesis"]),
+                    ("Data sources", ", ".join(t["data_sources"])),
+                    ("Synthetic IOC", t["synthetic_indicators"]["log_example"]),
+                ],
+            )
     if "detection_exercise" in c:
         ex = c["detection_exercise"]
-        out(f"## DETECTION EXERCISE\n\nScenario: {ex['scenario']}\n\nLog entries:")
-        for line in ex["log_entries"]:
-            out(f"  {line}")
         rule = ex["detection_rule_template"]
-        out(f"\nExpected TTPs: {', '.join(ex['expected_ttps'])}")
-        out(f"\nRule template:\n  Name: {rule['name']}\n  Logic: {rule['logic']}\n  Severity: {rule['severity']}\n")
+        ui.section("🧪 Detection engineering exercise")
+        ui.kv("Scenario", ex["scenario"])
+        ui.line("  Log entries:")
+        for entry in ex["log_entries"]:
+            ui.line(f"    {entry}")
+        ui.kv("Expected TTPs", ", ".join(ex["expected_ttps"]))
+        ui.panel(
+            f"Rule template · {rule['name']}", [("Logic", rule["logic"]), ("Severity", rule["severity"])]
+        )
     if "workflow_steps" in c:
         sc = c["scenario"]
-        out(f"## OSINT WORKFLOW SIMULATION\n\n{sc['title']}\n\nBackground: {sc['background']}\n\nSynthetic intel:")
+        ui.section(f"🕵️  OSINT workflow simulation: {sc['title']}")
+        ui.kv("Background", sc["background"])
         for k, v in sc["synthetic_intel"].items():
-            out(f"  {k.replace('_', ' ').title()}: {v}")
-        out("\n## WORKFLOW STEPS\n")
+            ui.kv(k.replace("_", " ").title(), v)
+        ui.section("Workflow steps")
         for s in c["workflow_steps"]:
-            out(f"Step {s['step']}: {s['action']}\n  Guidance: {s['guidance']}")
-            out(f"  Expected output: {s['synthetic_output']}\n")
+            ui.kv(f"Step {s['step']}", s["action"], indent=0)
+            ui.line(f"    Guidance: {s['guidance']}")
+            ui.line(f"    Expected output: {s['synthetic_output']}")
 
 
-def run_quiz(
-    questions: list[dict[str, Any]],
-    heading: str,
-    ask: Callable[[str], str] = input,
-    out: Callable[[str], None] = print,
-) -> tuple[int, int]:
-    title(f"QUIZ: {heading}", out)
+def run_quiz(questions: list[dict[str, Any]], heading: str, ui: Ui) -> tuple[int, int]:
+    ui.heading(f"🧠 Quiz: {heading}")
     answers = []
     for i, q in enumerate(questions, 1):
-        out(f"Question {i}: {q['question']}")
+        ui.line(f"Question {i}/{len(questions)}: {q['question']}")
         for j, opt in enumerate(q["options"], 1):
-            out(f"  {j}. {opt}")
+            ui.line(f"  {j}. {opt}")
         while True:
-            raw = ask(f"\nYour answer (1-{len(q['options'])}): ").strip()
+            raw = ui.ask(f"\nYour answer (1-{len(q['options'])}): ").strip()
             if raw.isdigit() and 1 <= int(raw) <= len(q["options"]):
                 break
-            out(f"Enter a number between 1 and {len(q['options'])}.")
+            ui.warn(f"Enter a number between 1 and {len(q['options'])}.")
         pick = int(raw) - 1
         answers.append(pick)
         if pick == q["correct"]:
-            out(f"Correct. {q['explanation']}\n")
+            ui.good(f"Correct. {q['explanation']}\n")
         else:
-            out(f"Incorrect. Answer: {q['options'][q['correct']]}\n  {q['explanation']}\n")
+            ui.bad(f"Incorrect. Answer: {q['options'][q['correct']]}")
+            ui.line(f"  {q['explanation']}\n")
     right, total = score_answers(questions, answers)
-    out(f"Score: {right}/{total} ({right / total * 100:.0f}%)" if total else "No questions.")
+    if total:
+        ui.meter(right, total)
     return right, total
 
 
-def show_exercise(data: dict[str, Any], out: Callable[[str], None] = print) -> None:
+def show_exercise(data: dict[str, Any], ui: Ui) -> None:
     ex = data["assessment"]["practical_exercise"]
-    title("PRACTICAL EXERCISE", out)
-    out(f"Task: {ex['task']}\n\nRequirements:")
-    for r in ex["requirements"]:
-        out(f"  - {r}")
-    out("\nExample solution:")
+    ui.heading("🛠️  Practical exercise")
+    ui.kv("Task", ex["task"])
+    ui.section("Requirements")
+    ui.bullets(ex["requirements"], "•")
+    ui.section("Example solution")
     for k, v in ex["example_solution"].items():
-        out(f"  {k.replace('_', ' ').title()}: {v}")
+        ui.kv(k.replace("_", " ").title(), v)
 
 
-def list_modules(data: dict[str, Any], out: Callable[[str], None] = print) -> None:
-    for m in data["modules"]:
-        n = len(m["content"].get("quiz", []))
-        out(f"{m['module_id']}: {m['title']} ({n} quiz questions)")
+def list_modules(data: dict[str, Any], ui: Ui) -> None:
+    rows = [(m["module_id"], m["title"], str(len(m["content"].get("quiz", [])))) for m in data["modules"]]
+    ui.table("Modules", ["ID", "Title", "Quiz questions"], rows)
 
 
-def interactive(data: dict[str, Any]) -> None:
-    print(BANNER)
+def interactive(data: dict[str, Any], ui: Ui) -> None:
+    banner(ui)
     while True:
-        title("MAIN MENU")
-        print("1. Browse modules\n2. Final quiz\n3. Practical exercise\n4. Exit")
-        choice = input("\nSelect (1-4): ").strip()
+        ui.heading("Main menu")
+        ui.line("1. 📚 Browse modules\n2. 🏁 Final quiz\n3. 🛠️  Practical exercise\n4. 👋 Exit")
+        choice = ui.ask("\nSelect (1-4): ").strip()
         if choice == "1":
-            list_modules(data)
-            module = find_module(data, input("\nModule id (or 'b' to go back): "))
+            list_modules(data, ui)
+            module = find_module(data, ui.ask("\nModule id (or 'b' to go back): "))
             if module is None:
                 continue
-            show_module(module)
+            show_module(module, ui)
             quiz = module["content"].get("quiz")
-            if quiz and input("\nTake this module's quiz? (y/n): ").strip().lower() == "y":
-                run_quiz(quiz, module["title"])
+            if quiz and ui.ask("\nTake this module's quiz? (y/n): ").strip().lower() == "y":
+                run_quiz(quiz, module["title"], ui)
         elif choice == "2":
-            run_quiz(data["assessment"]["final_quiz"], "Final assessment")
+            run_quiz(data["assessment"]["final_quiz"], "Final assessment", ui)
         elif choice == "3":
-            show_exercise(data)
+            show_exercise(data, ui)
         elif choice == "4":
-            print("\nEducational use only. Stay curious, stay legal.")
+            ui.line("\nEducational use only. Stay curious, stay legal. 💜")
             return
         else:
-            print("Invalid option.")
+            ui.warn("Invalid option.")
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -140,6 +165,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     p.add_argument("--data", help="path to an alternative training JSON file")
+    p.add_argument("--plain", action="store_true", help="disable colours and emoji")
     sub = p.add_subparsers(dest="cmd")
     sub.add_parser("modules", help="list modules")
     s = sub.add_parser("show", help="print a module")
@@ -151,8 +177,9 @@ def build_parser() -> argparse.ArgumentParser:
     return p
 
 
-def main(argv: list[str] | None = None) -> int:
+def main(argv: list[str] | None = None, ui: Ui | None = None) -> int:
     args = build_parser().parse_args(argv)
+    ui = ui or Ui(rich=False if args.plain else None)
     try:
         data = load_data(args.data)
     except (OSError, ValueError) as e:
@@ -160,30 +187,30 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     try:
         if args.cmd is None:
-            interactive(data)
+            interactive(data, ui)
         elif args.cmd == "modules":
-            list_modules(data)
+            list_modules(data, ui)
         elif args.cmd == "show":
             module = find_module(data, args.module_id)
             if module is None:
                 print(f"error: unknown module '{args.module_id}'", file=sys.stderr)
                 return 2
-            show_module(module)
+            show_module(module, ui)
         elif args.cmd == "quiz":
             if args.target.lower() == "final":
-                run_quiz(data["assessment"]["final_quiz"], "Final assessment")
+                run_quiz(data["assessment"]["final_quiz"], "Final assessment", ui)
             else:
                 module = find_module(data, args.target)
                 quiz = module["content"].get("quiz") if module else None
                 if not quiz:
                     print(f"error: no quiz for '{args.target}'", file=sys.stderr)
                     return 2
-                run_quiz(quiz, module["title"])
+                run_quiz(quiz, module["title"], ui)
         elif args.cmd == "exercise":
-            show_exercise(data)
+            show_exercise(data, ui)
         elif args.cmd == "validate":
             problems = validate(data)
-            print("OK" if not problems else "\n".join(problems))
+            ui.line("OK" if not problems else "\n".join(problems))
             return 1 if problems else 0
     except (KeyboardInterrupt, EOFError):
         print()
